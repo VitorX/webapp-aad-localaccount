@@ -9,6 +9,8 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using WebApplication1.Models;
+using Microsoft.Owin.Security.OpenIdConnect;
+using Microsoft.Owin.Security.Cookies;
 
 namespace WebApplication1.Controllers
 {
@@ -391,7 +393,14 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
+
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+
+            var idpClaim = ClaimsPrincipal.Current.Claims.FirstOrDefault(claim => { return claim.Type == "idp"; });
+            if (idpClaim!=null)
+                HttpContext.GetOwinContext().Authentication.SignOut(
+                    OpenIdConnectAuthenticationDefaults.AuthenticationType, CookieAuthenticationDefaults.AuthenticationType);
+          
             return RedirectToAction("Index", "Home");
         }
 
